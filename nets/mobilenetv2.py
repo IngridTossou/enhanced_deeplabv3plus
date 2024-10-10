@@ -35,13 +35,13 @@ class DeformableConv2d(nn.Module):
 
         self.offsets = nn.Conv2d(in_channels, 2 * kernel_size * kernel_size, kernel_size=kernel_size, stride=stride,
                                  padding=padding, dilation=dilation, groups=1, bias=True)
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding,
+        self.conv = nn.Conv2d(2 * kernel_size * kernel_size, out_channels, kernel_size=kernel_size, stride=stride, padding=padding,
                               dilation=dilation, groups=groups, bias=bias)
+        # self.final = nn.Conv2d(out_channels, out_channels, 1)
 
     def forward(self, x):
         offsets = self.offsets(x)
-        x = torch.nn.functional.conv2d(x, self.conv.weight, self.conv.bias, self.stride, self.padding, self.dilation,
-                                       self.groups, offsets)
+        x = self.conv(offsets)
         return x
 
 

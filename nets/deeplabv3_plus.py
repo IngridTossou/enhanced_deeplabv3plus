@@ -67,6 +67,7 @@ class MobileNetV2(nn.Module):
         self.down_idx = [2, 4, 7, 14]
 
         # Add SE Blocks
+        self.conv = nn.ModuleList([nn.Conv2d(320, c, 1, 1) for c in [24, 32, 64, 96, 160, 320]])
         self.se_blocks = nn.ModuleList([SEBlock(c) for c in [24, 32, 64, 96, 160, 320]])
 
         if downsample_factor == 8:
@@ -81,10 +82,14 @@ class MobileNetV2(nn.Module):
     def forward(self, x):
         low_level_features = self.features[:4](x)
         x = self.features[4:](low_level_features)
+        x_list=[]
 
         # Apply SE blocks to features
+        for idx, conv in enumerate(self.conv):
+            x_list.append(conv(x))
         for idx, se_block in enumerate(self.se_blocks):
-            x = se_block(x)
+            x = se_block(x_list[idx])
+
 
         return low_level_features, x
 

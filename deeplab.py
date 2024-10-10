@@ -132,7 +132,7 @@ class DeeplabV3(object):
         with torch.no_grad():
             images = torch.from_numpy(image_data)
             if self.cuda:
-                images = images.cuda()
+                images = images
                 
             #---------------------------------------------------#
             #   图片传入网络进行预测
