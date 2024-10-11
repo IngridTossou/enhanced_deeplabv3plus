@@ -5,10 +5,7 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-
-from utils.utils import cvtColor, preprocess_input
-
-
+from .utils import cvtColor, preprocess_input  # Use relative imports
 class DeeplabDataset(Dataset):
     def __init__(self, annotation_lines, input_shape, num_classes, train, dataset_path):
         super(DeeplabDataset, self).__init__()
@@ -23,8 +20,8 @@ class DeeplabDataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        annotation_line = self.annotation_lines[index]
-        name            = annotation_line.split()[0]
+        if self.train and np.random.rand() < 0.5: image,
+        label = self.mixup(image, label)
 
         #-------------------------------#
         #   从文件中读取图像
@@ -167,3 +164,21 @@ def deeplab_dataset_collate(batch):
     pngs        = torch.from_numpy(np.array(pngs)).long()
     seg_labels  = torch.from_numpy(np.array(seg_labels)).type(torch.FloatTensor)
     return images, pngs, seg_labels
+
+
+
+# MixUp function to increase data
+def mixup(self, image, label):
+    alpha = 0.2
+lam = np.random.beta(alpha, alpha)
+index =np.random.randint(0,len(self.annotation_lines)
+)
+image2, label2 = self.__getitem__(index)
+
+
+def some_function():
+    lam = 0.5
+    mixed_image = lam * image + (1 - lam) * image2  # Correct indentation
+    return mixed_image
+    mixed_label = lam * label + (1 - lam) * label2
+    return mixed_image, mixed_label

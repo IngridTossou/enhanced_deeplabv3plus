@@ -6,6 +6,8 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.optim as optim
+import torch
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from torch.utils.data import DataLoader
 
 from nets.deeplabv3_plus import DeepLab
@@ -109,7 +111,7 @@ if __name__ == "__main__":
     #------------------------------#
     #   输入图片的大小
     #------------------------------#
-    input_shape         = [256, 256]
+    input_shape         = [1024, 1024]
 
     # ----------------------------------------------------------------------------------------------------------------------------# 训练分为两个阶段，分别是冻结阶段和解冻阶段。设置冻结阶段是为了满足机器性能不足的同学的训练需求。 冻结训练需要的显存较小，显卡非常差的情况下，可设置Freeze_Epoch等于UnFreeze_Epoch，此时仅仅进行冻结训练。
     #      
@@ -161,7 +163,7 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 300
-    Unfreeze_batch_size = 2
+    Unfreeze_batch_size = 16
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
@@ -510,9 +512,14 @@ if __name__ == "__main__":
                 train_sampler.set_epoch(epoch)
 
             set_optimizer_lr(optimizer, lr_scheduler_func, epoch)
+            optimizer = torch.optim.Adam(model.parameters(), lr=initial_lr)
 
             fit_one_epoch(model_train, model, loss_history, eval_callback, optimizer, epoch,
                     epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, dice_loss, focal_loss, cls_weights, num_classes, fp16, scaler, save_period, save_dir, local_rank)
+            # Define the scheduler
+            scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=0.00001)
+            scheduler.step()
+
 
             if distributed:
                 dist.barrier()
